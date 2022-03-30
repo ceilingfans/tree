@@ -49,7 +49,7 @@ impl<'a> Cursor<'a> {
         chars.next().unwrap_or(EOF)
     }
 
-    /// Advances the iterator to move forward
+    /// Moves forward in the character sequence
     pub(crate) fn advance(&mut self) -> Option<char> {
         self.chars.next()
     }
