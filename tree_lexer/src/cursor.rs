@@ -54,3 +54,81 @@ impl<'a> Cursor<'a> {
         self.chars.next()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_consumed() {
+        let mut cursor = Cursor::new("0123456789");
+
+        cursor.advance();
+        assert_eq!(cursor.consumed(), 1);
+
+        cursor.advance();
+        assert_eq!(cursor.consumed(), 2);
+
+        cursor.advance();
+        assert_eq!(cursor.consumed(), 3);
+
+        cursor.advance();
+        cursor.advance();
+        cursor.advance();
+        assert_eq!(cursor.consumed(), 6);
+    }
+
+    #[test]
+    fn test_reset_consumed() {
+        let mut cursor = Cursor::new("0123456789");
+
+        cursor.advance();
+        assert_eq!(cursor.consumed(), 1);
+
+        cursor.advance();
+        cursor.reset_consumed();
+        assert_eq!(cursor.consumed(), 0);
+    }
+
+    #[test]
+    fn test_is_eof() {
+        let mut cursor = Cursor::new("123");
+
+        cursor.advance();
+        assert!(!cursor.is_eof());
+
+        cursor.advance();
+        cursor.advance();
+        assert!(cursor.is_eof());
+    }
+
+    #[test]
+    fn test_peek_first() {
+        let mut cursor = Cursor::new("123");
+
+        assert_eq!(cursor.peek_first(), '1');
+
+        cursor.advance();
+        assert_eq!(cursor.peek_first(), '2');
+    }
+
+    #[test]
+    fn test_peek_second() {
+        let mut cursor = Cursor::new("123");
+
+        assert_eq!(cursor.peek_second(), '2');
+
+        cursor.advance();
+        assert_eq!(cursor.peek_second(), '3');
+    }
+
+    #[test]
+    fn test_advance() {
+        let mut cursor = Cursor::new("123");
+
+        assert_eq!(cursor.advance(), Some('1'));
+        assert_eq!(cursor.advance(), Some('2'));
+        assert_eq!(cursor.advance(), Some('3'));
+        assert_eq!(cursor.advance(), None);
+    }
+}
