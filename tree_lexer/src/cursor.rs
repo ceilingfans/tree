@@ -2,7 +2,7 @@ use std::str::Chars;
 
 use crate::Location;
 
-const EOF: char = '\0';
+pub(crate) const EOF: char = '\0';
 
 /// A Peekable iterator over a character sequence
 ///

@@ -1,4 +1,6 @@
 //! The lexer for tree lang (heavily inspired by the rust compiler's `rustc_lexer` crate)
+use crate::cursor::{Cursor, EOF};
+
 mod cursor;
 
 /// Represents the kind of token
@@ -104,5 +106,77 @@ impl Token {
             location,
             length,
         }
+    }
+}
+
+impl Cursor<'_> {
+    /// Gobbles up the number literal and returns it as a `String`.
+    /// Ignores `_` characters to allow underscores in the number literal for readability.
+    fn eat_digits(&mut self) -> String {
+        let mut ret = String::new();
+
+        loop {
+            match self.peek_first() {
+                '_' => {
+                    self.advance();
+                },
+                c @ '0'..='9' => {
+                    ret.push(c);
+                    self.advance();
+                },
+                _ => {
+                    break;
+                }
+            }
+        }
+
+        ret
+    }
+
+    /// Gobbles up case-insensitive hexadecimal digits and returns them as a `String`.
+    /// Ignores `_` characters to allow underscores in the number literal for readability.
+    fn eat_hexadecimal_digits(&mut self) -> String {
+        let mut ret = String::new();
+
+        loop {
+            match self.peek_first() {
+                '_' => {
+                    self.advance();
+                },
+                c @ ('0'..='9' | 'a'..='f' | 'A'..='F') => {
+                    ret.push(c);
+                    self.advance();
+                },
+                _ => {
+                    break;
+                }
+            }
+        }
+
+        ret
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_eat_digits() {
+        let mut cursor = Cursor::new("123_456 ");
+        assert_eq!(cursor.eat_digits(), "123456");
+        assert_eq!(cursor.advance(), Some(' '));
+    }
+
+    #[test]
+    fn test_eat_hexadecimal_digits() {
+        let mut cursor = Cursor::new("0xAf_123_D ");
+
+        // move two ahead to eat '0x'
+        cursor.advance();
+        cursor.advance();
+
+        assert_eq!(cursor.eat_hexadecimal_digits(), "Af123D");
+        assert_eq!(cursor.advance(), Some(' '));
     }
 }
