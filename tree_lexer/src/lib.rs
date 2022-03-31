@@ -1,6 +1,7 @@
 //! The lexer for tree lang (heavily inspired by the rust compiler's `rustc_lexer` crate)
 mod cursor;
 
+/// Represents the kind of token
 #[derive(Debug, PartialEq, PartialOrd)]
 pub enum TokenKind {
     // Single character tokens
@@ -66,25 +67,32 @@ pub enum TokenKind {
     Or,
 }
 
+/// Represents the type of literal,
+/// used to differentiate between `identifiers`, `numbers`, `strings` and `boolean` values
 #[derive(Debug, PartialEq, PartialOrd)]
 pub enum LiteralKind {
+    /// An `identifier`, used to name things.
+    /// Also used for keywords
     Ident { keyword: bool },
     Number,
     String,
     Bool,
 }
 
+/// Represents the location the first character of the token is at
 #[derive(Debug, PartialEq, PartialOrd)]
 pub struct Location {
     pub line: usize,
     pub column: usize,
 }
 
+/// Represents a token use for parsing
 #[derive(Debug, PartialEq, PartialOrd)]
 pub struct Token {
     pub kind: TokenKind,
     pub literal: String,
     pub location: Location,
+    /// The length of the token
     pub length: usize,
 }
 
