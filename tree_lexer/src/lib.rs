@@ -1,6 +1,7 @@
 //! The lexer for tree lang (heavily inspired by the rust compiler's `rustc_lexer` crate)
 mod cursor;
 
+#[derive(Debug, PartialEq, PartialOrd)]
 pub enum TokenKind {
     // Single character tokens
     /// `+`
@@ -65,6 +66,7 @@ pub enum TokenKind {
     Or,
 }
 
+#[derive(Debug, PartialEq, PartialOrd)]
 pub enum LiteralKind {
     Ident {
         keyword: bool
@@ -74,11 +76,13 @@ pub enum LiteralKind {
     Bool
 }
 
+#[derive(Debug, PartialEq, PartialOrd)]
 pub struct Location {
     pub line: usize,
     pub column: usize,
 }
 
+#[derive(Debug, PartialEq, PartialOrd)]
 pub struct Token {
     pub kind: TokenKind,
     pub literal: String,
