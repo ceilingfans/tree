@@ -40,6 +40,11 @@ impl<'a> Cursor<'a> {
         self.column = 0;
     }
 
+    /// Increments the column
+    pub(crate) fn increment_column(&mut self) {
+        self.column += 1;
+    }
+
     /// Increments the line count
     pub(crate) fn increment_line(&mut self) {
         self.line += 1;
@@ -81,7 +86,7 @@ impl<'a> Cursor<'a> {
                     self.reset_column();
                     self.increment_line();
                 } else {
-                    self.column += 1;
+                    self.increment_column();
                 }
 
                 return Some(c);
