@@ -68,12 +68,10 @@ pub enum TokenKind {
 
 #[derive(Debug, PartialEq, PartialOrd)]
 pub enum LiteralKind {
-    Ident {
-        keyword: bool
-    },
+    Ident { keyword: bool },
     Number,
     String,
-    Bool
+    Bool,
 }
 
 #[derive(Debug, PartialEq, PartialOrd)]

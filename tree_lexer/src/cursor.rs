@@ -1,5 +1,7 @@
 use std::str::Chars;
 
+use crate::Location;
+
 const EOF: char = '\0';
 
 /// A Peekable iterator over a character sequence
@@ -9,13 +11,17 @@ const EOF: char = '\0';
 pub(crate) struct Cursor<'a> {
     chars: Chars<'a>,
     initial_len: usize,
+    line: usize,
+    column: usize,
 }
 
 impl<'a> Cursor<'a> {
     pub(crate) fn new(input: &'a str) -> Self {
         Cursor {
             chars: input.chars(),
-            initial_len: input.len()
+            initial_len: input.len(),
+            line: 0,
+            column: 0,
         }
     }
 
@@ -27,6 +33,24 @@ impl<'a> Cursor<'a> {
     /// Resets the amount of eaten chars to 0
     pub(crate) fn reset_consumed(&mut self) {
         self.initial_len = self.chars.as_str().len();
+    }
+
+    /// Resets the column to 0
+    pub(crate) fn reset_column(&mut self) {
+        self.column = 0;
+    }
+
+    /// Increments the line count
+    pub(crate) fn increment_line(&mut self) {
+        self.line += 1;
+    }
+
+    /// Returns location of the cursor
+    pub(crate) fn location(&self) -> Location {
+        Location {
+            line: self.line,
+            column: self.column,
+        }
     }
 
     /// Returns whether the iterator is at the end of file
@@ -51,7 +75,19 @@ impl<'a> Cursor<'a> {
 
     /// Moves forward in the character sequence
     pub(crate) fn advance(&mut self) -> Option<char> {
-        self.chars.next()
+        match self.chars.next() {
+            Some(c) => {
+                if c == '\n' {
+                    self.reset_column();
+                    self.increment_line();
+                } else {
+                    self.column += 1;
+                }
+
+                return Some(c);
+            }
+            None => None,
+        }
     }
 }
 
@@ -130,5 +166,18 @@ mod tests {
         assert_eq!(cursor.advance(), Some('2'));
         assert_eq!(cursor.advance(), Some('3'));
         assert_eq!(cursor.advance(), None);
+    }
+
+    #[test]
+    fn test_newline_advance() {
+        let mut cursor = Cursor::new("123\n456");
+        let expected = Location { line: 1, column: 0 };
+
+        cursor.advance();
+        cursor.advance();
+        cursor.advance();
+        cursor.advance();
+
+        assert_eq!(cursor.location(), expected);
     }
 }
