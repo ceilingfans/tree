@@ -210,4 +210,16 @@ mod tests {
         assert_eq!(cursor.eat_hexadecimal_digits(), "Af123D");
         assert_eq!(cursor.advance(), Some(' '));
     }
+
+    #[test]
+    fn test_eat_binary_digits() {
+        let mut cursor = Cursor::new("0b_101_01 ");
+
+        // move two ahead to eat '0b'
+        cursor.advance();
+        cursor.advance();
+
+        assert_eq!(cursor.eat_binary_digits(), "10101");
+        assert_eq!(cursor.advance(), Some(' '));
+    }
 }
