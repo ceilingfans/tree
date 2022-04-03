@@ -82,7 +82,7 @@ pub enum LiteralKind {
 }
 
 /// Represents the base of a number literal
-#[drive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, PartialEq, PartialOrd)]
 pub enum Base {
     Hexadecimal,
     Decimal,
@@ -152,6 +152,29 @@ impl Cursor<'_> {
                     self.advance();
                 },
                 c @ ('0'..='9' | 'a'..='f' | 'A'..='F') => {
+                    ret.push(c);
+                    self.advance();
+                },
+                _ => {
+                    break;
+                }
+            }
+        }
+
+        ret
+    }
+
+    /// Gobbles up binary digits and returns them as a `String`.
+    /// Ignores `_` characters to allow underscores in the number literal for readability.
+    fn eat_binary_digits(&mut self) -> String {
+        let mut ret = String::new();
+
+        loop {
+            match self.peek_first() {
+                '_' => {
+                    self.advance();
+                },
+                c @ '0'..='1' => {
                     ret.push(c);
                     self.advance();
                 },
