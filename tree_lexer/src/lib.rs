@@ -76,9 +76,17 @@ pub enum LiteralKind {
     /// An `identifier`, used to name things.
     /// Also used for keywords
     Ident { keyword: bool },
-    Number,
+    Number(Base),
     String,
     Bool,
+}
+
+/// Represents the base of a number literal
+#[drive(Debug, PartialEq, PartialOrd)]
+pub enum Base {
+    Hexadecimal,
+    Decimal,
+    Binary,
 }
 
 /// Represents the location the first character of the token is at
