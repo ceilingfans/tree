@@ -120,7 +120,7 @@ impl Token {
 impl Cursor<'_> {
     /// Gobbles up the number literal and returns it as a `String`.
     /// Ignores `_` characters to allow underscores in the number literal for readability.
-    fn eat_digits(&mut self) -> String {
+    fn eat_decimal_digits(&mut self) -> String {
         let mut ret = String::new();
 
         loop {
@@ -193,9 +193,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_eat_digits() {
+    fn test_eat_decimal_digits() {
         let mut cursor = Cursor::new("123_456 ");
-        assert_eq!(cursor.eat_digits(), "123456");
+        assert_eq!(cursor.eat_decimal_digits(), "123456");
         assert_eq!(cursor.advance(), Some(' '));
     }
 
