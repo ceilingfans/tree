@@ -63,13 +63,13 @@ impl<'a> Cursor<'a> {
         self.chars.as_str().is_empty()
     }
 
-    /// Peeks at the next char in the iterator,
+    /// Peeks at the current character,
     /// returns an EOF char if the position cannot be found
     pub(crate) fn peek_first(&self) -> char {
         self.chars.clone().next().unwrap_or(EOF)
     }
 
-    /// Peeks at the second next char in the iterator,
+    /// Peeks at the next character,
     /// returns an EOF char if the position cannot be found
     pub(crate) fn peek_second(&self) -> char {
         let mut chars = self.chars.clone();
