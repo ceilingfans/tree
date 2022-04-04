@@ -67,6 +67,8 @@ pub enum TokenKind {
     And,
     /// `||`
     Or,
+    /// Whitespace
+    Whitespace,
 }
 
 /// Represents the type of literal,
@@ -186,6 +188,24 @@ impl Cursor<'_> {
 
         ret
     }
+
+    fn eat_comment(&mut self) {
+        self.eat_while(|c| c != '\n');
+    }
+
+    fn eat_multiline_comment(&mut self) {
+        while let Some(c) = self.advance() {
+            match c {
+                '*' => {
+                    if self.peek_first() == '/' {
+                        self.advance();
+                        break;
+                    }
+                },
+                _ => {}
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -221,5 +241,33 @@ mod tests {
 
         assert_eq!(cursor.eat_binary_digits(), "10101");
         assert_eq!(cursor.advance(), Some(' '));
+    }
+
+    #[test]
+    fn test_eat_comment() {
+        let mut cursor = Cursor::new("// This is a comment\nballs");
+        cursor.eat_comment();
+        assert_eq!(cursor.advance(), Some('\n'));
+    }
+
+    #[test]
+    fn test_eat_multiline_comment() {
+        let src = "/* this is a multiline comment\n\
+                   with multiple lines\n\
+                   and stuff */\n\
+                   balls";
+
+        let mut cursor = Cursor::new(src);
+        cursor.eat_multiline_comment();
+        assert_eq!(cursor.advance(), Some('\n'));
+    }
+
+    #[test]
+    fn test_failing_multiline_comment() {
+        let src = "/* obama obama *l";
+
+        let mut cursor = Cursor::new(src);
+        cursor.eat_multiline_comment();
+        assert_eq!(cursor.advance(), None);
     }
 }
