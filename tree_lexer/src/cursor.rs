@@ -94,6 +94,19 @@ impl<'a> Cursor<'a> {
             None => None,
         }
     }
+
+    /// Gobbles up characters until the given function `predicate` returns true
+    ///
+    /// Copied from rustc_lexer
+    pub(crate) fn eat_while(&mut self, predicate: impl Fn(char) -> bool) -> String {
+        let mut ret = String::new();
+
+        while predicate(self.peek_first()) && !self.is_eof() {
+            ret.push(self.advance().unwrap());
+        }
+
+        ret
+    }
 }
 
 #[cfg(test)]
@@ -184,5 +197,13 @@ mod tests {
         cursor.advance();
 
         assert_eq!(cursor.location(), expected);
+    }
+
+    #[test]
+    fn test_eat_while() {
+        let mut cursor = Cursor::new("aaaaaaaaaaaaab");
+        cursor.eat_while(|c| c == 'a');
+
+        assert_eq!(cursor.peek_first(), 'b');
     }
 }
