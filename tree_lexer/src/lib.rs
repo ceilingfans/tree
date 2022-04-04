@@ -189,10 +189,16 @@ impl Cursor<'_> {
         ret
     }
 
+    /// Gobbles up a comment
+    ///
+    /// Regular comments start with `two forward slashes // and end with a newline`
     fn eat_comment(&mut self) {
         self.eat_while(|c| c != '\n');
     }
 
+    /// Gobbles up a multiline comment
+    ///
+    /// Multiline comments start with `/*`, and end with `*/`
     fn eat_multiline_comment(&mut self) {
         while let Some(c) = self.advance() {
             match c {
