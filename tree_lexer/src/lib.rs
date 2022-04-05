@@ -189,6 +189,30 @@ impl Cursor<'_> {
         ret
     }
 
+    fn eat_number(&mut self) -> String {
+        if self.peek_first() == '0' {
+            match self.peek_second() {
+                'x' | 'X' => {
+                    self.advance();
+                    self.advance();
+                    return self.eat_hexadecimal_digits()
+                },
+                'b' | 'B' => {
+                    self.advance();
+                    self.advance();
+                    return self.eat_binary_digits()
+                },
+                // allow underscores as we allow underscores in the number literal
+                // as we allow them in eat_x_digits methods for readability
+                '0'..='9' | '_' => self.eat_decimal_digits(),
+                // TODO: actual error message
+                _ => panic!("Unexpected character after 0"),
+            }
+        } else {
+            self.eat_decimal_digits()
+        }
+    }
+
     /// Gobbles up a comment
     ///
     /// Regular comments start with `two forward slashes // and end with a newline`
@@ -247,6 +271,28 @@ mod tests {
 
         assert_eq!(cursor.eat_binary_digits(), "10101");
         assert_eq!(cursor.advance(), Some(' '));
+    }
+
+    #[test]
+    fn test_eat_number() {
+        let mut binary_cursor = Cursor::new("0b10101");
+        assert_eq!(binary_cursor.eat_number(), "10101");
+        assert!(binary_cursor.is_eof());
+
+        let mut hexadecimal_cursor = Cursor::new("0xAf123D");
+        assert_eq!(hexadecimal_cursor.eat_number(), "Af123D");
+        assert!(hexadecimal_cursor.is_eof());
+
+        let mut decimal_cursor = Cursor::new("123_456");
+        assert_eq!(decimal_cursor.eat_number(), "123456");
+        assert!(decimal_cursor.is_eof());
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_eat_number_fail() {
+        let mut cursor = Cursor::new("0p123");
+        cursor.eat_number();
     }
 
     #[test]
