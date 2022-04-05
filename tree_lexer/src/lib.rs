@@ -189,6 +189,7 @@ impl Cursor<'_> {
         ret
     }
 
+    /// Gobbles up the number literal (can only be base 2, 10 and 16) and returns it as a `String`.
     fn eat_number(&mut self) -> String {
         if self.peek_first() == '0' {
             match self.peek_second() {
