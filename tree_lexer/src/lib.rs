@@ -230,15 +230,17 @@ impl Cursor<'_> {
     ///
     /// Multiline comments start with `/*`, and end with `*/`
     fn eat_multiline_comment(&mut self) {
+        let mut depth = 0;
         while let Some(c) = self.advance() {
-            match c {
-                '*' => {
-                    if self.peek_first() == '/' {
-                        self.advance();
-                        break;
-                    }
-                },
-                _ => {}
+            if c == '*' && self.peek_first() == '/' {
+                depth -= 1;
+                self.advance();
+                if depth == 0 {
+                    break;
+                }
+            } else if c == '/' && self.peek_first() == '*' {
+                depth += 1;
+                self.advance();
             }
         }
     }
@@ -318,6 +320,15 @@ mod tests {
         let mut cursor = Cursor::new(src);
         cursor.eat_multiline_comment();
         assert_eq!(cursor.advance(), Some('\n'));
+    }
+
+    #[test]
+    fn test_nested_multiline_comment() {
+        let src = "/* /* nested */ */a";
+
+        let mut cursor = Cursor::new(src);
+        cursor.eat_multiline_comment();
+        assert_eq!(cursor.advance(), Some('a'));
     }
 
     #[test]
