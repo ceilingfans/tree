@@ -195,27 +195,27 @@ impl Cursor<'_> {
     ///
     /// - If the number literal attempts to specify a base that is invalid,
     /// e.g. `0p123`
-    fn eat_number(&mut self) -> String {
+    fn eat_number(&mut self) -> (String, Base) {
         if self.peek_first() == '0' {
             match self.peek_second() {
                 'x' | 'X' => {
                     self.advance();
                     self.advance();
-                    return self.eat_hexadecimal_digits()
+                    return (self.eat_hexadecimal_digits(), Base::Hexadecimal);
                 },
                 'b' | 'B' => {
                     self.advance();
                     self.advance();
-                    return self.eat_binary_digits()
+                    return (self.eat_binary_digits(), Base::Binary);
                 },
                 // allow underscores as we allow underscores in the number literal
                 // as we allow them in eat_x_digits methods for readability
-                '0'..='9' | '_' => self.eat_decimal_digits(),
+                '0'..='9' | '_' => (self.eat_decimal_digits(), Base::Decimal),
                 // TODO: actual error message
                 _ => panic!("Unexpected character after 0"),
             }
         } else {
-            self.eat_decimal_digits()
+            (self.eat_decimal_digits(), Base::Decimal)
         }
     }
 
@@ -284,15 +284,18 @@ mod tests {
     #[test]
     fn test_eat_number() {
         let mut binary_cursor = Cursor::new("0b10101");
-        assert_eq!(binary_cursor.eat_number(), "10101");
+        let binary_expected = (String::from("10101"), Base::Binary);
+        assert_eq!(binary_cursor.eat_number(), binary_expected);
         assert!(binary_cursor.is_eof());
 
         let mut hexadecimal_cursor = Cursor::new("0xAf123D");
-        assert_eq!(hexadecimal_cursor.eat_number(), "Af123D");
+        let hexadecimal_expected = (String::from("Af123D"), Base::Hexadecimal);
+        assert_eq!(hexadecimal_cursor.eat_number(), hexadecimal_expected);
         assert!(hexadecimal_cursor.is_eof());
 
         let mut decimal_cursor = Cursor::new("123_456");
-        assert_eq!(decimal_cursor.eat_number(), "123456");
+        let decimal_expected = (String::from("123456"), Base::Decimal);
+        assert_eq!(decimal_cursor.eat_number(), decimal_expected);
         assert!(decimal_cursor.is_eof());
     }
 
