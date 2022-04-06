@@ -89,7 +89,7 @@ impl<'a> Cursor<'a> {
                     self.increment_column();
                 }
 
-                return Some(c);
+                Some(c)
             }
             None => None,
         }

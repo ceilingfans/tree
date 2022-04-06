@@ -77,7 +77,9 @@ pub enum TokenKind {
 pub enum LiteralKind {
     /// An `identifier`, used to name things.
     /// Also used for keywords
-    Ident { keyword: bool },
+    Ident {
+        keyword: bool,
+    },
     Number(Base),
     String,
     Bool,
@@ -129,11 +131,11 @@ impl Cursor<'_> {
             match self.peek_first() {
                 '_' => {
                     self.advance();
-                },
+                }
                 c @ '0'..='9' => {
                     ret.push(c);
                     self.advance();
-                },
+                }
                 _ => {
                     break;
                 }
@@ -152,11 +154,11 @@ impl Cursor<'_> {
             match self.peek_first() {
                 '_' => {
                     self.advance();
-                },
+                }
                 c @ ('0'..='9' | 'a'..='f' | 'A'..='F') => {
                     ret.push(c);
                     self.advance();
-                },
+                }
                 _ => {
                     break;
                 }
@@ -175,11 +177,11 @@ impl Cursor<'_> {
             match self.peek_first() {
                 '_' => {
                     self.advance();
-                },
+                }
                 c @ '0'..='1' => {
                     ret.push(c);
                     self.advance();
-                },
+                }
                 _ => {
                     break;
                 }
@@ -201,13 +203,13 @@ impl Cursor<'_> {
                 'x' | 'X' => {
                     self.advance();
                     self.advance();
-                    return (self.eat_hexadecimal_digits(), Base::Hexadecimal);
-                },
+                    (self.eat_hexadecimal_digits(), Base::Hexadecimal)
+                }
                 'b' | 'B' => {
                     self.advance();
                     self.advance();
-                    return (self.eat_binary_digits(), Base::Binary);
-                },
+                    (self.eat_binary_digits(), Base::Binary)
+                }
                 // allow underscores as we allow underscores in the number literal
                 // as we allow them in eat_x_digits methods for readability
                 '0'..='9' | '_' => (self.eat_decimal_digits(), Base::Decimal),
