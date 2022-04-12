@@ -1,5 +1,8 @@
 //! The lexer for tree lang (heavily inspired by the rust compiler's `rustc_lexer` crate)
-use crate::cursor::{Cursor, EOF};
+extern crate unicode_xid;
+
+use unicode_xid::UnicodeXID;
+use crate::cursor::Cursor;
 
 mod cursor;
 
@@ -246,6 +249,32 @@ impl Cursor<'_> {
             }
         }
     }
+
+    /// Gobbles up an identifier, and returns it as a `String`,
+    /// Identifier naming rules follow Rusts naming rules.
+    ///
+    /// Panics
+    ///
+    /// - If the identifier has a bad start
+    fn eat_ident(&mut self) -> String {
+        if !is_xid_start(self.peek_first()){
+            panic!("bad identifier start"); // TODO: actual error message
+        }
+
+        // move past ident start
+        let mut ret = String::from(self.advance().unwrap());
+        ret.push_str(self.eat_while(is_xid_continue).as_str());
+
+        ret
+    }
+}
+
+fn is_xid_start(c: char) -> bool {
+    c == '_' || UnicodeXID::is_xid_start(c)
+}
+
+fn is_xid_continue(c: char) -> bool {
+    UnicodeXID::is_xid_continue(c)
 }
 
 #[cfg(test)]
@@ -344,4 +373,33 @@ mod tests {
         cursor.eat_multiline_comment();
         assert_eq!(cursor.advance(), None);
     }
+
+    #[test]
+    fn test_eat_ident() {
+        let mut cursor = Cursor::new("snake_case camelCase PascalCase SCREAMING_CASE _private");
+
+        assert_eq!(cursor.eat_ident(), "snake_case");
+        cursor.advance();
+
+        assert_eq!(cursor.eat_ident(), "camelCase");
+        cursor.advance();
+
+        assert_eq!(cursor.eat_ident(), "PascalCase");
+        cursor.advance();
+
+        assert_eq!(cursor.eat_ident(), "SCREAMING_CASE");
+        cursor.advance();
+
+        assert_eq!(cursor.eat_ident(), "_private");
+        assert!(cursor.is_eof());
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_eat_ident_fail() {
+        let mut cursor = Cursor::new("10Zed");
+
+        cursor.eat_ident();
+    }
+
 }
