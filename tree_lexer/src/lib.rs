@@ -450,6 +450,17 @@ mod tests {
     }
 
     #[test]
+    fn test_eat_ident_wonky_names() {
+        let mut cursor = Cursor::new("猫数 Кот");
+
+        assert_eq!(cursor.eat_ident(), "猫数");
+        cursor.advance();
+
+        assert_eq!(cursor.eat_ident(), "Кот");
+        assert!(cursor.is_eof());
+    }
+
+    #[test]
     #[should_panic]
     fn test_eat_ident_fail() {
         let mut cursor = Cursor::new("10Zed");
