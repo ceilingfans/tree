@@ -2,7 +2,7 @@
 extern crate unicode_xid;
 
 use unicode_xid::UnicodeXID;
-use crate::cursor::Cursor;
+use crate::cursor::{Cursor, EOF};
 
 mod cursor;
 
@@ -267,6 +267,61 @@ impl Cursor<'_> {
 
         ret
     }
+
+    fn eat_double_quoted_string(&mut self) -> String {
+        let mut ret = String::new();
+
+        self.advance(); // eat start quote
+
+        loop {
+            match self.peek_first() {
+                '\\' => {
+                    self.advance(); // eat escape backslash
+                    match self.peek_first() {
+                        '\\' => {
+                            ret.push('\\');
+                            self.advance();
+                        },
+                        'n' => {
+                            ret.push('\n');
+                            self.advance();
+                        },
+                        'r' => {
+                            ret.push('\r');
+                            self.advance();
+                        },
+                        't' => {
+                            ret.push('\t');
+                            self.advance();
+                        },
+                        '"' => {
+                            ret.push('"');
+                            self.advance();
+                        },
+                        '\'' => {
+                            ret.push('\'');
+                            self.advance();
+                        },
+                        _ => {
+                            panic!("unexpected escape sequence"); // TODO: actual error message
+                        }
+                    }
+                },
+                '"' => {
+                    self.advance();
+                    break;
+                },
+                EOF => {
+                    panic!("unterminated string"); // TODO: actual error message
+                },
+                _ => {
+                    ret.push(self.advance().unwrap());
+                }
+            }
+        }
+
+        ret
+    }
 }
 
 fn is_xid_start(c: char) -> bool {
@@ -402,4 +457,11 @@ mod tests {
         cursor.eat_ident();
     }
 
+    #[test]
+    fn test_eat_double_quoted_string() {
+        let mut cursor = Cursor::new(r#""a b c\"""#);
+
+        assert_eq!(cursor.eat_double_quoted_string(), "a b c\"");
+        assert!(cursor.is_eof());
+    }
 }
